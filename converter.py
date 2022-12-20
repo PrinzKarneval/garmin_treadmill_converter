@@ -1,63 +1,13 @@
 import datetime
+
+
 def conv_time(string):
     time = datetime.datetime.strptime(string, "%Y-%m-%dT%H:%M:%S.000Z")
     return time
-def write_track_point(text, last_distance, speed_run):
-    lines = text.splitlines()
 
-    distance = lines[2]
-    new_distance = last_distance + speed_run * 1000 / 3600
-    start_idx = distance.index(">")
-    end_idx = distance.index("</")
-    new_distance_string = distance[0:start_idx + 1]
-    new_distance_string += str(round(new_distance, 15))
-    new_distance_string += distance[end_idx:]
-    lines[2] = new_distance_string
-
-    speed = lines[8]
-    start_idx = speed.index(">")
-    end_idx = speed.index("</")
-    new_speed_string = speed[0:start_idx + 1]
-    new_speed_string += str(round(speed_run * 1000 / 3600, 15))
-    new_speed_string += speed[end_idx:]
-    lines[8] = new_speed_string
-
-    return "\n".join(lines)
-def write_lap(total_time, speed, intervals):
-    distance = round(total_time * speed * 1000 / 3600, 2)
-    avg_speed = speed * 1000 / 3600
-    start = f"""
-      <Lap StartTime="2022-12-20T17:54:21.000Z">
-        <TotalTimeSeconds>{total_time}</TotalTimeSeconds>
-        <DistanceMeters>{distance}</DistanceMeters>
-        <MaximumSpeed>{avg_speed}</MaximumSpeed>
-        <Calories>25</Calories>
-        <AverageHeartRateBpm>
-          <Value>145</Value>
-        </AverageHeartRateBpm>
-        <MaximumHeartRateBpm>
-          <Value>151</Value>
-        </MaximumHeartRateBpm>
-        <Intensity>Active</Intensity>
-        <TriggerMethod>Manual</TriggerMethod>
-      <Track>"""
-    end = f"""
-        </Track>
-        <Extensions>
-          <ns3:LX>
-            <ns3:AvgSpeed>{avg_speed}</ns3:AvgSpeed>
-            <ns3:AvgRunCadence>80</ns3:AvgRunCadence>
-            <ns3:MaxRunCadence>82</ns3:MaxRunCadence>
-          </ns3:LX>
-        </Extensions>
-      </Lap>"""
-    string = start
-    for i in intervals:
-        string = string + i
-    string = string + end
-    return string
-
-
+###
+### Overwrite with your lap durations and speed [kph]
+###
 laps = [
     (90.0, 10),
     (90.0, 12),
@@ -71,7 +21,10 @@ laps = [
 ]
 
 text = None
-with open("activity_10162883020.tcx", "r") as f:
+###
+### OVERWRITE FILENAME
+###
+with open("YOUR_FILE_NAME.tcx", "r") as f:
     text = f.readlines()
 
 lap = {
@@ -140,6 +93,7 @@ for i in range(len(text)):
     if text[i].strip().startswith("<ns3:AvgSpeed"):
         text[i] = f"            <ns3:AvgSpeed>{float(laps[lap_count][1] / 3.6)}</ns3:AvgSpeed>\n"
 
+# WRITE FILE
 f = open("activity.tcx", "w")
 f.write("".join(text))
 f.close()
